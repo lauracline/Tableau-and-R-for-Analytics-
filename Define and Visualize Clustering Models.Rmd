@@ -1,0 +1,52 @@
+---
+title: "Define and Visualize Clustering Models"
+author: "Laura Cline"
+date: "13/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Create a Centroid-Based Clustering Model in R 
+
+```{r}
+# Install and load packages
+library(Rserve)
+RServe()
+```
+
+```{r}
+# Load data
+cluster_data <- read.csv("data/ClusterData.csv")
+```
+
+```{r}
+# Create centroid-based clusters. We want 5 clusters and we will do 10 iterations
+
+result <- kmeans(cluster_data, 5, iter.max = 10)
+result
+```
+
+There are 5 clusters. There are only 7 members in the first cluster, but the others are pretty close in size. 
+
+Below that we can see the cluster means, in other words, where the centroids are on the graph. 
+
+We can also see the clustering vector which tells us which point is in which cluster. So point one is in cluster 5, point two is in cluster 3, and so on. 
+
+Below that we see the within cluster sum of squares by cluster and that measure, whoch comes out to 90.3% is pretty good. This means that we have a decent fit for our clusters in our data.
+
+# Add an R Clustering Model to a Tableau Viz 
+
+1. Create a scatterplot in Tableau. Place Profits on the Columns shelf and Sales on the Rows shelf. Go to the Analysis tab and turn off Aggregate Measures. 
+
+2. Create a Calculated Field: 
+
+SCRIPT_REAL(
+'result <- kmeans(x = data.frame(.arg1, .arg2), 5, iter.max = 10)
+result$cluster',
+SUM([Sales]), SUM([Profit])
+)
+
+3. Drag new calculated field to the Color icon in the Marks card 

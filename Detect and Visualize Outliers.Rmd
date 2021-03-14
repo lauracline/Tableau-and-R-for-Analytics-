@@ -2,7 +2,9 @@
 title: "Detect and Visualize Outliers"
 author: "Laura Cline"
 date: "13/03/2021"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
