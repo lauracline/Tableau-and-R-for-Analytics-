@@ -1,0 +1,65 @@
+---
+title: "Create and Visualize Linear Regression Models"
+author: "Laura Cline"
+date: "13/03/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# install.packages("Rserve")
+library(Rserve)
+```
+
+```{r}
+# Rserve()
+```
+
+# Create a Single and Multiple-Variable Linear Regression Model in R 
+
+```{r}
+# Load data 
+sales_data <- read.csv("data/SalesData.csv")
+```
+
+```{r}
+# Create single variable linear regression model 
+model1 <- lm(sales_data$Sales ~ sales_data$Distance, data = sales_data)
+
+model1
+```
+```{r}
+summary(model1)
+```
+
+```{r}
+# Create a multiple variable linear regression 
+
+model2 <- lm(sales_data$Sales ~ sales_data$Distance + sales_data$OrderCount, data = sales_data)
+
+model2
+```
+
+```{r}
+summary(model2)
+```
+
+# Add an R Regression Model to Tableau Viz 
+
+1. Create a scatterplot with Order Count in columns and Sales in rows. Go to the Analysis tab and turn off aggregate measures. 
+
+2. Create a calculated field in Tableau. In the calculated field write: 
+
+SCRIPT_REAL(
+"model <- lm(.arg1 ~ .arg2 + .arg3)
+model$fitted",
+
+SUM([Sales]), SUM([Distance]), SUM([Order Count])
+)
+
+3. Drag the calculated field to the y-axis. 
