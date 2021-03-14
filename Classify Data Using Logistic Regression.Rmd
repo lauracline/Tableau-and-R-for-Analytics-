@@ -1,0 +1,56 @@
+---
+title: "Classify Data Using Logistic Regression"
+author: "Laura Cline"
+date: "13/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Install and load libraries
+library(Rserve)
+# Rserve()
+```
+
+# Create a Logistic Regression Model in R 
+
+```{r}
+# Load Data
+train_data <- read.csv("data/TrainingData.csv")
+test_data <- read.csv("data/TestData.csv")
+```
+
+```{r}
+# Create the logistic regression model 
+model3 <- glm(LastYear ~ Year1 + Year2 + Year3 + Year4 + Year5, data = train_data, family = binomial)
+
+model3
+```
+
+```{r}
+# Test our logistic regression model
+test_data$pred <- predict(model3, newdata = test_data, type = "response")
+
+summary(model3)
+```
+
+# Add an R Logistic Regression to a Tableau Viz 
+
+1. Create a table in Tableau. Drag the Patron ID to the Rows shelf and Drag Years 1 through 5 to the data area.
+
+2. Create a calculated field: 
+
+SCRIPT_REAL(
+'train_data <- read.csv("data/TrainData.csv")
+model3 <- glm(.arg1 ~ .arg2 + .arg3 + .arg4 + .arg5 + .arg6, data = train_data, family = binomial)
+test_data <- read.csv("data/TestData.csv")
+
+result <- predict(model3, newdata = test_data, type = "response")',
+
+SUM([Last Year]), SUM([Year1]), SUM([Year2]), SUM([Year3]), SUM([Year4]), SUM([Year5])
+)
+
+3. Drag the new calculated field to the Measure Values card below Year 5. 

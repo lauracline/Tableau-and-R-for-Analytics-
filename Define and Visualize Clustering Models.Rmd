@@ -2,7 +2,9 @@
 title: "Define and Visualize Clustering Models"
 author: "Laura Cline"
 date: "13/03/2021"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # Install and load packages
 library(Rserve)
-RServe()
+# RServe()
 ```
 
 ```{r}
