@@ -1,0 +1,84 @@
+---
+title: "Visualize Random Forest Analysis Data in Tableau"
+author: "Laura Cline"
+date: "13/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Load and install packages 
+
+# library(RServe)
+# RServe()
+
+# install.packages("randomForest")
+library(randomForest)
+```
+
+# Create a Random Forest Analysis Model in R 
+
+```{r}
+# Load Data
+glass_train <- read.csv("data/GlassTrain.csv")
+glass_test <- read.csv("data/GlassTest.csv")
+```
+
+```{r}
+# Create random forest model 
+rf_model <- randomForest(as.factor(Class) ~ Attrib1 + Attrib2 + Attrib3 + Attrib4 + Attrib5 + Attrib6 + Attrib7 + Attrib8 + Attrib9, data = glass_train)
+```
+
+```{r}
+# Test our Random Forest Model 
+predictions <- as.factor(predict(rf_model, newdata = glass_test[2:10]))
+
+predictions
+```
+
+All the values are integers and we see an inventory of levels one through 7. We don't see any 4's because there are no 4s in the original dataset. 
+
+```{r}
+# Create a confusion matrix 
+confmatrix <- table(glass_test[,11], predictions)
+confmatrix
+```
+
+Our predictions are pretty good! We have 15 correctly predicted for one and 2 errors. All of category 2 is correct. Two out of six is correct for category 3, and so on. 
+
+```{r}
+# Get more info about random forest model
+rf_model
+```
+
+This is based on the training data and we can see that it did a classification and the formula is at the top. We see a confusion matrix for the training dataset and it also performs well. 
+
+# Add a Random Forest Analysis Model to a Tableau Viz 
+
+1. Create a text table in Tableau. Drag Glass ID to the rows shelf. Then, add class to the data area. 
+
+2. Create a Calculated Field:
+
+SCRIPT_INT(
+'library("randomForest")
+glass_train <- read.csv("data/train.csv")
+model <- randomForest(as.factor(.arg1) ~ .arg2 + .arg3 + .arg4 +  .arg5 +  .arg6 + .arg7 + .arg8 + .arg9 + .arg10, data = glass_train)
+glass_test <- read.csv("data/test.csv")
+predictions <- as.factor(predict(model, newdata = glass_test[2:10]))',
+
+SUM([Class]), SUM([Attrib1]), SUM([Attrib2]), SUM([Attrib3]), SUM([Attrib4]), SUM([Attrib5]), SUM([Attrib6]), SUM([Attrib7]), SUM([Attrib8]), SUM([Attrib9])
+)
+
+3. Drag the new calculated field to the Measure Values card under the Sum of Class. 
+
+4. However, Category 5 will be represented as Class 4 and Category 6 will be represented as Class 5. We know from looking at our dataset that there is no class 4. What happened is that when R passed the range back to Tableau, Tableau interpreted six categories and numbered them one through instead. 
+
+5. We will create a second calculated field so any class greater than 3 will have 1 added to it. This will remove the class 4. The name of the calculated field we created above is called RForest and that became our column name when we dragged this calculated field to the Measure Values card. Create the calculated field: 
+
+IF [RForest] > 3 THEN [RForest] + 1 
+ELSE [RForest]
+END
+
