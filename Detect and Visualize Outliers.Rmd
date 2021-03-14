@@ -1,0 +1,62 @@
+---
+title: "Detect and Visualize Outliers"
+author: "Laura Cline"
+date: "13/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Create an Outlier Detect Model in R 
+
+```{r}
+# Load and install packages / libraries 
+
+# install.packages("mvoutlier")
+library(mvoutlier)
+library(Rserve)
+
+# Rserve()
+```
+
+```{r}
+# Load data
+profit_data <- read.csv("data/ProfitData.csv")
+```
+
+
+To find outliers, we will use the `sign2` method to identify any outliers in the data collection. We need to combine part of the output of the sign2 function with data from the `profit_data` variable. We will combine them using the `cbind` command. `wfinal01` is part of the output of the `sign2` function and you will need to go to the documentation to find out what this is. 
+
+
+```{r}
+# Find outliers
+
+outliers <- sign2(cbind(profit_data$wfinal01, profit_data$ProfitPct))
+```
+
+If there are no errors in your data collection, then you would get an error message after you run the code above because there are missing or infinite values. Since we did not get an error message when we ran this, we probably have some outliers. 
+
+```{r}
+# Visualize data 
+outliers
+```
+
+Looks like we have an entire string 1 to 5 outliers then another one on the first row about a quarter of the way over and then another one on the second row. Outliers are marked as 0 and normal/expected values are marked as 1. Thus, we have 7 outliers in this dataset. 
+
+# Add an R Outlier Detection Model to a Tableau Viz
+
+1. Create a scatterplot in Tableau. Put Sales in the Columns shelf and Profit Pct in the Rows shelf. Go to the Analysis tab and turn off Aggregate measures. 
+
+2. Add a calculated field to identify outliers. 
+
+IF SCRIPT_REAL(
+"library(mvoutlier);
+sign2(cbind(.arg1))$wfinal01",
+SUM([Profit Pct])) = 0
+THEN "Outlier"
+ELSE "Expected"
+END
+
+3. Drag the new outliers measure to the Color icon on the Marks card 
