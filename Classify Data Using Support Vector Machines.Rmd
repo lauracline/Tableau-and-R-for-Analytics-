@@ -1,0 +1,66 @@
+---
+title: "Classify Data Using Support Vector Machines"
+author: "Laura Cline"
+date: "13/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Install and load packages
+# library(RServe)
+# Rserve()
+
+# install.packages("e1071")
+library(e1071)
+```
+
+# Create a Support Vector Machine in R 
+
+```{r}
+# Load data 
+svm_train <- read.csv("data/SVM_Training.csv")
+svm_test <- read.csv("data/SVM_Test.csv")
+```
+
+```{r}
+# Create SVM Model using training data
+model4 <- svm(formula = Purchased ~ Income + Age, data = svm_train, type = 'C-classification', kernel = 'linear')
+```
+
+```{r}
+# Test our model 
+predictions <- predict(model4, newdata = svm_test[-4])
+```
+
+```{r}
+# Create a confirmation matrix
+confmatrix <- table(svm_test[,4], predictions)
+
+confmatrix
+```
+
+It looks like we have a really good model when it comes to predicting whether someone will purchase something or not. If you look at the top-left corner, where it says 140, that is where the model said that a customer will NOT make a purchase and in fact they did not. There are only 12 where the model predicted they would make a purchase, but they didn't in reality. The output is split 24/24, so exactly 50/50 on whether a customer who made a purchase last time would make a purchase in the next year. Perhaps they don't have as much money as they had in the previous year. This model tells me who is not going to make a purchase and who we should focus on. 
+
+# Add an R Support Vector Machine Model to a Tableau Viz 
+
+1. Create a Text Table in Tableau. Drag the Customer ID to the Rows Shelf. Then, drag Age, Income, and Purchased to the Text icon in the Marks card. Go to Show Me and choose the Text Table.  
+
+2. Create a Calculated Field:
+
+SCRIPT_INT(
+'library("e1071")
+svm_train <- read.csv("data/train.csv")
+model <- svm(formula = .arg1 ~ .arg2 + .arg3, data = svm_train, type = "C-classification", kernel = "linear")
+svm_test <- read.csv("data/test.csv")
+predictions <- predict(model, newdata = test[-4])',
+
+SUM([Purchased]), SUM([Income]), SUM([Age])
+) - 1
+
+The `- 1` is so the output comes out 0 and 1, rather than as 1 and 2. 
+
+3. Drag the new calculated field to the Measure Values card under Age. 
